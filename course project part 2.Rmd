@@ -1,0 +1,85 @@
+---
+title: "Statistical Inference Course Project_Part 2"
+author: "Shee"
+output: html_document
+---
+
+In the second part, we're going to analyze the ToothGrowth data in the R datasets package. 
+
+###1. Load the ToothGrowth data and perform some basic exploratory data analyses
+```{r}
+#Load the ToothGrowth data.
+data(ToothGrowth)
+ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+
+#Some basic exploratory data analyses.
+str(ToothGrowth)
+head(ToothGrowth)
+```
+
+
+###2. Basic summary of the data
+
+The ToothGrowth dataset explains the relation between the growth of teeth of guinea pigs at each of three dose levels of Vitamin C (0.5, 1 and 2 mg) with each of two delivery methods(orange juice and ascorbic acid).
+```{r}
+summary(ToothGrowth)
+table(ToothGrowth$supp, ToothGrowth$dose)
+
+#Mean (by dose and by OJ & VC).
+aggregate(ToothGrowth$len,list(ToothGrowth$supp,ToothGrowth$dose),mean)
+
+#Standard Deviation (by dose and by OJ & VC).
+aggregate(ToothGrowth$len,list(ToothGrowth$supp,ToothGrowth$dose),sd)
+
+#Boxplot graph of the tooth length on the dose.
+library(ggplot2)
+ggplot(ToothGrowth, aes(x = factor(dose), y = len, fill = factor(dose))) +
+       geom_boxplot() + facet_grid(.~supp) +
+       labs(title = "Effect of Dosage and Supplement Type on Tooth Growth",
+       x = "Dose (mg)", y = "Tooth Length")
+```
+
+From the boxplot, the length of the tooth increases while the dosage level increases.
+
+
+###3. Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. 
+```{r}
+# T-test by supplemant type
+t.test(len ~ supp, data = ToothGrowth)
+
+# T-test by dose level 
+Tooth_dose0510 <- subset(ToothGrowth, dose %in% c(0.5, 1.0))
+Tooth_dose0520 <- subset(ToothGrowth, dose %in% c(0.5, 2.0))
+Tooth_dose1020 <- subset(ToothGrowth, dose %in% c(1.0, 2.0))
+t.test(len ~ dose, data = Tooth_dose0510)
+t.test(len ~ dose, data = Tooth_dose0520)
+t.test(len ~ dose, data = Tooth_dose1020)
+
+# T-test for supplement by dose level
+Tooth_dose05 <- subset(ToothGrowth, dose == 0.5)
+Tooth_dose10 <- subset(ToothGrowth, dose == 1.0)
+Tooth_dose20 <- subset(ToothGrowth, dose == 2.0)
+t.test(len ~ supp, data = Tooth_dose05)
+t.test(len ~ supp, data = Tooth_dose10)
+t.test(len ~ supp, data = Tooth_dose20)
+```
+
+For dose 0.5, the p-value of OJ compared to VC is 0.006359, which is less than 0.05, we reject null hypothesis, there is a difference between both methods.
+
+For dose 1.0, the p-value of OJ compared to VC is 0.001038, which is less than 0.05, we reject null hypothesis, there is a difference between both methods.
+
+For dose 2.0, the p-value of OJ compared to VC is 0.9639, which is greater than 0.05, we failed to reject null hypothesis, there is no significant difference between both methods.
+
+
+###4. Conclusions and Assumptions
+
+Based of the results, we can conclude that:
+
+1. The 2mg dose has larger impact on tooth growth than 1.0mg and 0.5mg, so there is a difference in the tooth growth while the doses are larger.
+
+2. For doses of 0.5mg and 1.0mg, OJ has a greater effect on tooth growth than VC. 
+
+3. For dose 2.0mg there is no significant difference between the methods, thus it is uncertain whether there will be a greater effect for tooth growth from either OJ or VC.
+
+Assumption:
+There is no other factor that will affect the tooth growth.
